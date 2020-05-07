@@ -10,7 +10,7 @@ const {signup, login} = require('./handlers/authors');
 const Auth = require('./util/Auth');
 
 
-app.get('/notes', Auth, getAllNotes);
+app.get('/notes/:username', Auth, getAllNotes);
 app.post('/note', Auth, addNewNote);
 
 

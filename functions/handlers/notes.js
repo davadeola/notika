@@ -5,8 +5,11 @@ exports.getAllNotes = (req, res)=>{
        
         db
         .collection('notes')
+        .where("username", "==" , req.params.username)
         .get()
         .then((notes)=>{
+            
+
             let allNotes = [];
             notes.forEach((note) => {
                 allNotes.push({
@@ -31,6 +34,7 @@ exports.addNewNote = (req, res)=>{
         title: req.body.title,
         createdAt: new Date().toISOString(),
         favorite: false,
+        username: req.user.username,
         category: req.body.category,
         body: req.body.body,
         lastEdited: new Date().toISOString()
