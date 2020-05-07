@@ -4,10 +4,14 @@ const express = require('express');
 const app = express();
 
 const {getAllNotes, addNewNote} = require('./handlers/notes');
-const {signup, login} = require('./handlers/authors')
+const {signup, login} = require('./handlers/authors');
 
-app.get('/notes', getAllNotes);
-app.post('/note', addNewNote);
+//import middleware
+const Auth = require('./util/Auth');
+
+
+app.get('/notes', Auth, getAllNotes);
+app.post('/note', Auth, addNewNote);
 
 
 //author routes
