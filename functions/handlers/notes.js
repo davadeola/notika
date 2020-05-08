@@ -8,7 +8,7 @@ exports.getAllNotes = (req, res)=>{
         .where("username", "==" , req.params.username)
         .get()
         .then((notes)=>{
-            
+
 
             let allNotes = [];
             notes.forEach((note) => {
@@ -16,8 +16,10 @@ exports.getAllNotes = (req, res)=>{
                     title: note.data().title,
                     body: note.data().body,
                     category: note.data().category,
-                    author: note.data().authorId,
-                    noteId: note.id
+                    author: req.user.username,
+                    noteId: note.id,
+                    createdAt: note.data().createdAt,
+                    lastEdited: note.data().lastEdited
                 })
             });
 
@@ -49,5 +51,31 @@ exports.addNewNote = (req, res)=>{
     }).catch(err=>{
         res.status(500).json({error: 'Something went wrong'});
         console.error(err)
+    })
+}
+
+
+exports.deleteNote = (req, res)=>{
+    
+    let document = db.doc(`/notes/${req.params.noteId}`);
+    document.get()
+    .then(doc=>{
+        if (!doc.exists) {
+            return res.status(404).json({error: "Document does not exist"})
+        } else if(doc.data().username != req.user.username) {
+           
+            return res.status(403).json({error: "Unauthorized access"})
+
+        }else{
+            return document.delete();
+            
+        }
+    }).then(()=>{
+
+        res.json({message: "Deleted Successfully"});
+        
+    }).catch(err=>{
+        console.error(err);
+        res.status(500).json({err: err.code})
     })
 }
