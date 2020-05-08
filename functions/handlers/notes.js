@@ -79,3 +79,29 @@ exports.deleteNote = (req, res)=>{
         res.status(500).json({err: err.code})
     })
 }
+
+
+exports.favoriteNote = (req, res)=>{
+    let document = db.doc(`/notes/${req.params.noteId}`);
+    document.get()
+    .then((doc)=>{
+        if (!doc.exists) {
+            return res.status(404).json({error: "Document not found"})
+
+        } else if(doc.data().username != req.user.username) {
+           
+            return res.status(403).json({error: "Unauthorized access"})
+
+        } else {
+            document.update({
+                lastEdited: new Date().toISOString(),
+                favorite: true
+            })
+        }
+    }).then(()=>{
+        res.json({message: "Your note has been added to favorites"})
+    }).catch(err=>{
+        console.error(err);
+        res.status(500).json({err: err.code})
+    })
+}
