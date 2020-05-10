@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 
 const {getAllNotes, addNewNote, deleteNote, favoriteNote} = require('./handlers/notes');
-const {signup, login} = require('./handlers/authors');
+const {signup, login, uploadProfileImage} = require('./handlers/authors');
 
 //import middleware
 const Auth = require('./util/Auth');
@@ -12,12 +12,12 @@ const Auth = require('./util/Auth');
 
 app.get('/notes/:username', Auth, getAllNotes);
 app.post('/note', Auth, addNewNote);
-app.delete('/notes/:noteId', Auth, deleteNote)
-app.post('/notes/:noteId', Auth, favoriteNote)
+app.delete('/notes/:noteId', Auth, deleteNote);
+app.post('/notes/:noteId/favorite', Auth, favoriteNote);
 
 //author routes
 app.post('/signup', signup);
 app.post('/login', login);
-
+app.post('/uploadProfile', Auth, uploadProfileImage);
 
 exports.api = functions.https.onRequest(app);

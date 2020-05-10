@@ -95,7 +95,7 @@ exports.favoriteNote = (req, res)=>{
         } else {
             document.update({
                 lastEdited: new Date().toISOString(),
-                favorite: true
+                favorite: !doc.data().favorite
             })
         }
     }).then(()=>{
