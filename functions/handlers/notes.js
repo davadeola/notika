@@ -13,6 +13,7 @@ exports.getAllNotes = (req, res) => {
           category: note.data().category,
           author: req.user.username,
           noteId: note.id,
+          favorite: note.data().favorite,
           createdAt: note.data().createdAt,
           lastEdited: note.data().lastEdited,
         });
@@ -27,7 +28,7 @@ exports.getAllNotes = (req, res) => {
 
 exports.addNewNote = (req, res) => {
   const newNote = {
-    title: req.body.title,
+    title: req.body.title != "" ? req.body.title : "Untitled",
     createdAt: new Date().toISOString(),
     favorite: false,
     username: req.user.username,
@@ -88,6 +89,34 @@ exports.favoriteNote = (req, res) => {
     })
     .then(() => {
       res.json({ message: "Your note has been added to favorites" });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ err: err.code });
+    });
+};
+
+exports.editNote = (req, res) => {
+  let document = db.doc(`/notes/${req.params.noteId}`);
+
+  document
+    .get()
+    .then((doc) => {
+      if (!doc.exists) {
+        return res.status(404).json({ error: "Document not found" });
+      } else if (doc.data().username != req.user.username) {
+        return res.status(403).json({ error: "Unauthorized access" });
+      } else {
+        document.update({
+          lastEdited: new Date().toISOString(),
+          title: req.body.title != "" ? req.body.title : "Untitled",
+          category: req.body.category,
+          body: req.body.body,
+        });
+      }
+    })
+    .then(() => {
+      res.json({ message: "Your note has been edited to favorites" });
     })
     .catch((err) => {
       console.error(err);

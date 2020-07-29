@@ -35,7 +35,7 @@ exports.signup = (req, res) => {
     })
     .then((data) => {
       userId = data.user.uid;
-      return data.user.getIdToken();
+      return data.user.getIdToken(true);
     })
     .then((idToken) => {
       token = idToken;
@@ -76,14 +76,28 @@ exports.login = (req, res) => {
     return res.status(400).json({ errors });
   }
 
+  let user, userData, mToken;
+
   firebase
     .auth()
     .signInWithEmailAndPassword(author.email, author.password)
     .then((data) => {
-      return data.user.getIdToken();
+      user = data.user.uid;
+      return data.user.getIdToken(true);
     })
     .then((token) => {
-      return res.json({ token });
+      mToken = token;
+      return db.collection("users").where("userId", "==", user).limit(1).get();
+    })
+    .then((data) => {
+      userData = {
+        token: mToken,
+        email: data.docs[0].data().email,
+        imageUrl: data.docs[0].data().imageUrl,
+        username: data.docs[0].data().username,
+      };
+
+      return res.json(userData).status(200);
     })
     .catch((err) => {
       console.error(err);
@@ -94,6 +108,54 @@ exports.login = (req, res) => {
           .status(500)
           .json({ general: "Something went wrong please try again" });
       }
+    });
+};
+
+exports.verifyAuthToken = (req, res) => {
+  let idToken;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    idToken = req.headers.authorization.split("Bearer ")[1];
+  } else {
+    console.error("No token found");
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
+  admin
+    .auth()
+    .verifyIdToken(idToken)
+    .then((decodedToken) => {
+      req.user = decodedToken;
+      return db
+        .collection("users")
+        .where("userId", "==", req.user.uid)
+        .limit(1)
+        .get();
+    })
+    .then((data) => {
+      req.user.username = data.docs[0].data().username;
+      return res.status(200).json({ token: idToken });
+    })
+    .catch((err) => {
+      console.error("Error while verifying token", err);
+      return res.status(403).json(err);
+    });
+};
+
+exports.refreshAuthToken = (req, res) => {
+  let user = firebase.auth().currentUser;
+  //console.log(" UID" + req.user.uid);
+
+  user
+    .getIdToken(true)
+    .then((token) => {
+      return res.json({ token }).status(200);
+    })
+    .catch((err) => {
+      return res.status(500).json({ ServerError: "Something went wrong" });
     });
 };
 
@@ -157,4 +219,17 @@ exports.uploadProfileImage = (req, res) => {
   });
 
   busboy.end(req.rawBody);
+};
+
+exports.logout = (req, res) => {
+  firebase
+    .auth()
+    .signOut()
+    .then(() => {
+      return res.status(200).json({ Success: "Successfully logged out" });
+    })
+    .catch((error) => {
+      console.log(error);
+      return res.status(500).json({ error });
+    });
 };
