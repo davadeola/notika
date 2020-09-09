@@ -1,4 +1,5 @@
 const { db } = require("../util/admin");
+const moment = require("moment");
 
 exports.getAllNotes = (req, res) => {
   db.collection("notes")
@@ -29,19 +30,19 @@ exports.getAllNotes = (req, res) => {
 exports.addNewNote = (req, res) => {
   const newNote = {
     title: req.body.title != "" ? req.body.title : "Untitled",
-    createdAt: new Date().toISOString(),
+    createdAt: moment.utc().utcOffset(3).format("MMMM DD YYYY, hh:mm:ss a"),
     favorite: false,
     username: req.user.username,
     category: req.body.category,
     body: req.body.body,
-    lastEdited: new Date().toISOString(),
+    lastEdited: moment.utc().utcOffset(3).format("MMMM DD YYYY, hh:mm:ss a"),
   };
 
   db.collection("notes")
     .add(newNote)
     .then((doc) => {
-      const noteDone = newNote;
-      res.json({ noteDone });
+      const noteDone = { noteId: doc.id, ...newNote };
+      res.json(noteDone);
     })
     .catch((err) => {
       res.status(500).json({ error: "Something went wrong" });
@@ -108,7 +109,10 @@ exports.editNote = (req, res) => {
         return res.status(403).json({ error: "Unauthorized access" });
       } else {
         document.update({
-          lastEdited: new Date().toISOString(),
+          lastEdited: moment
+            .utc()
+            .utcOffset(3)
+            .format("MMMM DD YYYY, hh:mm:ss a"),
           title: req.body.title != "" ? req.body.title : "Untitled",
           category: req.body.category,
           body: req.body.body,

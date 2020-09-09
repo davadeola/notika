@@ -26,7 +26,7 @@ exports.signup = (req, res) => {
     .get()
     .then((doc) => {
       if (doc.exists) {
-        return res.status(400).json({ username: "Username is already taken" });
+        return res.status(400).json({ response: "Username is already taken" });
       } else {
         return firebase
           .auth()
@@ -51,16 +51,16 @@ exports.signup = (req, res) => {
       db.doc(`/users/${newAuthor.username}`).set(authorCredentials);
     })
     .then(() => {
-      return res.status(201).json({ token });
+      return res.status(201).json({ response: token });
     })
     .catch((err) => {
       console.error(err);
       if (err.code == "auth/email-already-in-use") {
-        return res.status(400).json({ email: "Email already in use" });
+        return res.status(400).json({ response: "Email already in use" });
       } else {
         return res
           .status(500)
-          .json({ general: "Something went wrong please try again" });
+          .json({ response: "Something went wrong please try again" });
       }
     });
 };

@@ -20,21 +20,21 @@ exports.validateSignUpData = (data) => {
   let errors = {};
 
   if (isEmpty(data.email)) {
-    errors.email = "Must not be empty";
+    errors.response = "Must not be empty";
   } else if (!isEmail(data.email)) {
-    errors.email = "Must be a valid email";
+    errors.response = "Must be a valid email";
   }
 
   if (isEmpty(data.password)) {
-    errors.password = "Must not be empty";
+    errors.response = "Must not be empty";
   }
 
   if (data.password != data.confirmPassword) {
-    errors.confirmPassword = "Passwords must match";
+    errors.response = "Passwords must match";
   }
 
   if (isEmpty(data.username)) {
-    errors.handle = "Must not be empty";
+    errors.response = "Must not be empty";
   }
 
   return {
@@ -48,11 +48,11 @@ exports.validateLoginData = (data) => {
   console.log(data);
 
   if (isEmpty(data.email)) {
-    errors.email = "Must not empty";
+    errors.response = "Must not empty";
   }
 
   if (isEmpty(data.password)) {
-    errors.password = "Must not be empty";
+    errors.response = "Must not be empty";
   }
 
   return {
