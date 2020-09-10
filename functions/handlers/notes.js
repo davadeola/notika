@@ -4,6 +4,7 @@ const moment = require("moment");
 exports.getAllNotes = (req, res) => {
   db.collection("notes")
     .where("username", "==", req.user.username)
+    .orderBy("lastEdited", "desc")
     .get()
     .then((notes) => {
       let allNotes = [];
